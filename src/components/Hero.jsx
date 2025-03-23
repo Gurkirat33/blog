@@ -1,6 +1,7 @@
 // components/HeroSection.jsx
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 const HeroSection = () => {
   const imageGallery = [
@@ -41,17 +42,11 @@ const HeroSection = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button
+              asChild
               size="lg"
               className="rounded-full px-10 py-6 text-base font-medium"
             >
-              Explore Articles
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-full px-10 py-6 text-base font-medium border-2"
-            >
-              Subscribe Now
+              <Link href="/blog">Explore Blogs</Link>
             </Button>
           </div>
         </div>
