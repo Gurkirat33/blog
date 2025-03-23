@@ -3,9 +3,9 @@
 import SignIn from "@/components/SignIn";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
-export default function SignInPage() {
+function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -41,4 +41,12 @@ export default function SignInPage() {
   };
 
   return <SignIn onSubmit={handleSubmit} error={error} isLoading={isLoading} />;
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInContent />
+    </Suspense>
+  );
 }
