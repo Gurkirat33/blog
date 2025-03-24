@@ -49,11 +49,13 @@ const BlogCard = ({ blog }) => {
           </h3>
         </Link>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <p className="text-slate-600 line-clamp-3">
-          {blog.content.substring(0, 150).replace(/<[^>]*>/g, "")}...
-        </p>
-      </CardContent>
+      <CardContent
+        className="flex-grow line-clamp-3"
+        dangerouslySetInnerHTML={{
+          __html:
+            blog.content.substring(0, 150).replace(/<[^>]*>/g, "") + "...",
+        }}
+      />
       <CardFooter className="flex justify-between items-center text-sm text-slate-500 pt-4 border-t border-slate-100">
         <span className="flex items-center gap-1">
           <Calendar className="h-4 w-4" />

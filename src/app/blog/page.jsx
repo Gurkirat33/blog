@@ -8,10 +8,8 @@ import prisma from "@/lib/prisma";
 const placeholderImage =
   "https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80";
 
-// This enables ISR - Incremental Static Regeneration
-export const revalidate = 3600; // Revalidate at most every hour
+export const revalidate = 3600;
 
-// Calculate read time based on content length
 function getReadTime(content) {
   return Math.max(1, Math.ceil((content?.length || 0) / 1000)) || 3;
 }
@@ -93,9 +91,14 @@ export default async function BlogPage() {
                       {blog.title}
                     </h2>
                   </Link>
-                  <p className="text-slate-600 mb-4 line-clamp-3">
-                    {blog.content.substring(0, 150).replace(/<[^>]*>/g, "")}...
-                  </p>
+                  <p
+                    className="text-slate-600 mb-4 line-clamp-3"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        blog.content.substring(0, 150).replace(/<[^>]*>/g, "") +
+                        "...",
+                    }}
+                  />
                   <div className="mt-auto flex justify-between items-center text-sm text-slate-500 pt-4 border-t border-slate-100">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
