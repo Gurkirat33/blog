@@ -37,10 +37,8 @@ export async function GET(request, { params }) {
   }
 }
 
-// Update a post
 export async function PUT(request, { params }) {
   try {
-    // Check authentication
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -52,7 +50,6 @@ export async function PUT(request, { params }) {
 
     const { postId } = params;
 
-    // Get the post to check ownership
     const existingPost = await prisma.post.findUnique({
       where: {
         id: postId,
@@ -67,7 +64,6 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Check if the user is the author of the post
     if (existingPost.authorId !== session.user.id) {
       return NextResponse.json(
         { error: "You can only update your own posts" },
@@ -75,10 +71,8 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Get updated data
     const { title, content, slug, featuredImage } = await request.json();
 
-    // Validate required fields
     if (!title || !content) {
       return NextResponse.json(
         { error: "Title and content are required" },
@@ -86,7 +80,6 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Check if slug is already used by another post
     if (slug && slug !== existingPost.slug) {
       const slugPost = await prisma.post.findUnique({
         where: { slug },
@@ -103,7 +96,6 @@ export async function PUT(request, { params }) {
       }
     }
 
-    // Update the post
     const updatedPost = await prisma.post.update({
       where: {
         id: postId,
@@ -116,11 +108,9 @@ export async function PUT(request, { params }) {
       },
     });
 
-    // Revalidate paths
     revalidatePath("/blog");
     revalidatePath("/blog/[slug]", "page");
 
-    // Revalidate both the old and new slug paths if slug changed
     if (slug && slug !== existingPost.slug) {
       revalidatePath(`/blog/${existingPost.slug}`);
       revalidatePath(`/blog/${slug}`);
@@ -138,10 +128,8 @@ export async function PUT(request, { params }) {
   }
 }
 
-// Delete a post
 export async function DELETE(request, { params }) {
   try {
-    // Check authentication
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -153,7 +141,6 @@ export async function DELETE(request, { params }) {
 
     const { postId } = params;
 
-    // Get the post to check ownership and get the slug
     const existingPost = await prisma.post.findUnique({
       where: {
         id: postId,
@@ -168,7 +155,6 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Check if the user is the author of the post
     if (existingPost.authorId !== session.user.id) {
       return NextResponse.json(
         { error: "You can only delete your own posts" },
@@ -176,14 +162,12 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Delete the post
     await prisma.post.delete({
       where: {
         id: postId,
       },
     });
 
-    // Revalidate paths after deletion
     revalidatePath("/blog");
     revalidatePath("/blog/[slug]", "page");
     revalidatePath(`/blog/${existingPost.slug}`);
