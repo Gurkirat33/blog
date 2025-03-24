@@ -78,50 +78,38 @@ export default function CreatePost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title || !editorRef.current) {
-      setError("Title and content are required!");
+    if (!title) {
+      setError("Title is required!");
+      setSuccess("");
+      return;
+    }
+
+    if (!slug) {
+      setError("Slug is required!");
+      setSuccess("");
+      return;
+    }
+
+    if (!editorRef.current) {
+      setError("Content is required!");
       setSuccess("");
       return;
     }
 
     const content = editorRef.current.getContent();
 
-    if (!content) {
-      setError("Content is required!");
-      setSuccess("");
-      return;
-    }
-
     setIsSubmitting(true);
     setError("");
     setSuccess("");
 
     try {
-      // Handle image upload first if there is an image
-      let imagePath = null;
-      if (image) {
-        const formData = new FormData();
-        formData.append("image", image);
-
-        const imageResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!imageResponse.ok) {
-          throw new Error("Failed to upload image");
-        }
-
-        const imageData = await imageResponse.json();
-        imagePath = imageData.imagePath;
-      }
-
       // Prepare data for the API
       const postData = {
         title,
         slug,
         content,
-        ...(imagePath && { featuredImage: imagePath }),
+        // If we have an image preview (base64), use it directly
+        ...(imagePreview && { featuredImage: imagePreview }),
       };
 
       console.log("Submitting post:", postData);
@@ -140,7 +128,6 @@ export default function CreatePost() {
         throw new Error(data.error || "Error creating post");
       }
 
-      // Show success and reset form
       setSuccess("Post created successfully!");
       resetForm();
 
@@ -150,8 +137,9 @@ export default function CreatePost() {
         router.refresh();
       }, 1500);
     } catch (error) {
-      console.error("Post creation error:", error);
-      setError(error.message || "Something went wrong");
+      console.error("Error:", error);
+      setError(error.message);
+      setSuccess(""); // Ensure success message is cleared when there's an error
     } finally {
       setIsSubmitting(false);
     }

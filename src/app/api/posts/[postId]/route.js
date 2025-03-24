@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-// Get a specific post by ID
 export async function GET(request, { params }) {
   try {
     const { postId } = params;

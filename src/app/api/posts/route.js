@@ -18,7 +18,7 @@ export async function POST(request) {
 
     // Get post data
     const data = await request.json();
-    const { title, content, slug } = data;
+    const { title, content, slug, featuredImage } = data;
 
     // Validate required fields
     if (!title || !content || !slug) {
@@ -50,7 +50,7 @@ export async function POST(request) {
         title,
         content,
         slug,
-        featuredImage: data.featuredImage || null,
+        featuredImage: featuredImage || null,
         author: {
           connect: {
             id: session.user.id,

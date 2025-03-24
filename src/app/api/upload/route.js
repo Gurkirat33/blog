@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request) {
@@ -15,13 +13,10 @@ export async function POST(request) {
       );
     }
 
-    // Convert the file to a Buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Get the file extension
+    // Get the file type
     const originalFilename = file.name;
     const fileExtension = originalFilename.split(".").pop().toLowerCase();
+    const mimeType = file.type;
 
     // Only allow image file types
     const allowedTypes = ["jpg", "jpeg", "png", "gif", "webp"];
@@ -32,32 +27,22 @@ export async function POST(request) {
       );
     }
 
-    // Create a unique filename
-    const filename = `${uuidv4()}.${fileExtension}`;
+    // Convert the file to a Buffer then to Base64
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64String = buffer.toString("base64");
 
-    // Create the uploads directory if it doesn't exist
-    const uploadDir = join(process.cwd(), "public", "uploads");
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (error) {
-      console.error("Failed to create upload directory:", error);
-    }
-
-    // Write the file to the uploads directory
-    const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    // Return the path to the uploaded file (relative to the public directory)
-    const imagePath = `/uploads/${filename}`;
+    // Create a data URL
+    const dataUrl = `data:${mimeType};base64,${base64String}`;
 
     return NextResponse.json({
       success: true,
-      imagePath,
+      imagePath: dataUrl,
     });
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("Error processing image:", error);
     return NextResponse.json(
-      { error: "Failed to upload image" },
+      { error: "Failed to process image" },
       { status: 500 }
     );
   }

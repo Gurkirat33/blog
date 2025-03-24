@@ -133,54 +133,43 @@ export default function EditPost({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title || !editorRef.current) {
-      setError("Title and content are required!");
+    if (!title) {
+      setError("Title is required!");
+      setSuccess("");
+      return;
+    }
+
+    if (!slug) {
+      setError("Slug is required!");
+      setSuccess("");
+      return;
+    }
+
+    if (!editorRef.current) {
+      setError("Content is required!");
       setSuccess("");
       return;
     }
 
     const content = editorRef.current.getContent();
 
-    if (!content) {
-      setError("Content is required!");
-      setSuccess("");
-      return;
-    }
-
     setIsSubmitting(true);
     setError("");
     setSuccess("");
 
     try {
-      // Handle image upload first if there is a new image
-      let imagePath = currentImage;
-
-      if (newImage) {
-        const formData = new FormData();
-        formData.append("image", newImage);
-
-        const imageResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!imageResponse.ok) {
-          throw new Error("Failed to upload image");
-        }
-
-        const imageData = await imageResponse.json();
-        imagePath = imageData.imagePath;
-      }
-
       // Prepare data for the API
       const postData = {
         title,
         slug,
         content,
-        featuredImage: imagePath,
+        // If we have a new image (imagePreview has changed), use it directly
+        ...(imagePreview && imagePreview !== post.featuredImage
+          ? { featuredImage: imagePreview }
+          : {}),
       };
 
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -194,17 +183,10 @@ export default function EditPost({ params }) {
         throw new Error(data.error || "Error updating post");
       }
 
-      // Show success message
       setSuccess("Post updated successfully!");
-
-      // After a short delay, redirect to posts list
-      setTimeout(() => {
-        router.push("/dashboard?tab=posts");
-        router.refresh();
-      }, 1500);
     } catch (error) {
-      console.error("Post update error:", error);
-      setError(error.message || "Something went wrong");
+      console.error("Error:", error);
+      setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
